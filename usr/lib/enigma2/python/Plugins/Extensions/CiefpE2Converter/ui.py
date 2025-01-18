@@ -54,8 +54,15 @@ def convert_selected_groups(input_file, output_dir, service_type, selected_group
                 file.write(f"#NAME {bouquet_name}\n")
                 for metadata, url in groups[group_name]:
                     url_encoded = url.replace(":", "%3a")
-                    file.write(f"#SERVICE {service_type}:0:0:0:0:0:0:0:{url_encoded}\n")
                     channel_name = metadata.split(",")[1].strip()
+                    if service_type.startswith("streamlink"):
+                        if service_type == "streamlink_wrapper":
+                            file.write(f"#SERVICE 4097:0:1:0:0:0:0:0:0:0:streamlink%3a//{url_encoded}:{channel_name}\n")
+                        else:
+                            file.write(f"#SERVICE 4097:0:1:0:0:0:0:0:0:0:http%3a//127.0.0.1%3a8088/{url_encoded}:{channel_name}\n")
+                    else:
+                        file.write(f"#SERVICE {service_type}:0:0:0:0:0:0:0:{url_encoded}\n")
+                    # Add description for each service
                     file.write(f"#DESCRIPTION {channel_name}\n")
 
 # Register the bouquet in bouquets.tv
@@ -197,6 +204,9 @@ class MainScreen(Screen, ConfigListScreen):
             ("Gstreamer (4097:0:1)", "4097:0:1"),
             ("Exteplayer3 (5002:0:1)", "5002:0:1"),
             ("DVB (1:0:1)", "1:0:1"),
+            ("Radio (4097:0:2)", "4097:0:2"),
+            ("Streamlink (http%3a//127.0.0.1%3a8088/)", "streamlink"),
+            ("Streamlink Wrapper (streamlink%3a//)", "streamlink_wrapper"),
         ]
         self.session.openWithCallback(self.on_service_type_selection, ChoiceBox, title="Select Service Type", list=choices)
 
