@@ -98,7 +98,7 @@ class MainScreen(Screen, ConfigListScreen):
     <screen name="CiefpE2Converter" position="center,center" size="1200,600" title="CiefpE2Converter">
         <widget name="background" position="840,0" size="360,600" pixmap="/usr/lib/enigma2/python/Plugins/Extensions/CiefpE2Converter/background.png" zPosition="-1" alphatest="on" />
         <widget name="message_label" position="50,50" size="740,100" font="Regular;24" valign="top" />
-        <widget name="file_list" position="50,150" size="740,300" scrollbarMode="showOnDemand" />
+        <widget name="file_list" position="50,100" size="740,350" scrollbarMode="showOnDemand" />
         <widget name="button_red" position="50,450" size="150,40" font="Bold;22" halign="center" backgroundColor="#9F1313" foregroundColor="#000000" />
         <widget name="button_yellow" position="200,450" size="150,40" font="Bold;22" halign="center" backgroundColor="#9F9F13" foregroundColor="#000000" />
         <widget name="button_blue" position="350,450" size="150,40" font="Bold;22" halign="center" backgroundColor="#13389F" foregroundColor="#000000" />
