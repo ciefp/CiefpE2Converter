@@ -92,18 +92,18 @@ def register_bouquet(bouquet_name):
         print(f"ERROR registering bouquet: {e}")
         return False
 
-# Main Screen
 class MainScreen(Screen, ConfigListScreen):
-    skin = """
-    <screen name="CiefpE2Converter" position="center,center" size="1200,600" title="CiefpE2Converter">
-        <widget name="background" position="840,0" size="360,600" pixmap="/usr/lib/enigma2/python/Plugins/Extensions/CiefpE2Converter/background.png" zPosition="-1" alphatest="on" />
-        <widget name="message_label" position="50,50" size="740,100" font="Regular;24" valign="top" />
-        <widget name="file_list" position="50,100" size="740,350" scrollbarMode="showOnDemand" />
-        <widget name="button_red" position="50,450" size="150,40" font="Bold;22" halign="center" backgroundColor="#9F1313" foregroundColor="#000000" />
-        <widget name="button_yellow" position="200,450" size="150,40" font="Bold;22" halign="center" backgroundColor="#9F9F13" foregroundColor="#000000" />
-        <widget name="button_blue" position="350,450" size="150,40" font="Bold;22" halign="center" backgroundColor="#13389F" foregroundColor="#000000" />
-        <widget name="button_green" position="500,450" size="150,40" font="Bold;22" halign="center" backgroundColor="#1F771F" foregroundColor="#000000" />
-        <widget name="status_label" position="10,500" size="800,88" font="Regular;22" halign="center" />
+    version = "1.5"  # Verzija plugina
+    skin = f"""
+    <screen name="CiefpE2Converter" position="center,center" size="1600,800" title="CiefpE2Converter v{version}">
+        <widget name="background" position="1200,0" size="400,800" pixmap="/usr/lib/enigma2/python/Plugins/Extensions/CiefpE2Converter/background.png" zPosition="-1" alphatest="on" />
+        <widget name="message_label" position="50,30" size="1100,100" font="Regular;24" valign="top" />
+        <widget name="file_list" position="50,150" size="600,580" scrollbarMode="showOnDemand" />
+        <widget name="status_label" position="700,150" size="500,580" font="Regular;22" halign="left" valign="top" />
+        <widget name="button_red" position="50,750" size="200,40" font="Bold;22" halign="center" backgroundColor="#9F1313" foregroundColor="#000000" />
+        <widget name="button_yellow" position="250,750" size="200,40" font="Bold;22" halign="center" backgroundColor="#9F9F13" foregroundColor="#000000" />
+        <widget name="button_blue" position="450,750" size="200,40" font="Bold;22" halign="center" backgroundColor="#13389F" foregroundColor="#000000" />
+        <widget name="button_green" position="650,750" size="200,40" font="Bold;22" halign="center" backgroundColor="#1F771F" foregroundColor="#000000" />
     </screen>
     """
 
@@ -138,6 +138,15 @@ class MainScreen(Screen, ConfigListScreen):
         self.selected_groups = []
         self.selected_service_type = None
 
+    def update_status_label(self):
+        if self.selected_groups:
+            groups_display = "Selected groups:\n"
+            for idx, group in enumerate(self.selected_groups, 1):
+                groups_display += f"{idx}. {group}\n"
+            self["status_label"].setText(groups_display.strip())
+        else:
+            self["status_label"].setText("No groups selected.")
+
     def choose_file(self):
         selected = self["file_list"].getSelection()
         if selected is None:
@@ -148,7 +157,8 @@ class MainScreen(Screen, ConfigListScreen):
             self["file_list"].descent()
         else:
             self.selected_file = os.path.join(self["file_list"].getCurrentDirectory(), selected[0])
-            self["message_label"].setText(f"Selected file: {self.selected_file}")
+            # Prikaz selektovanog fajla i naziva buketa u dva reda
+            self["message_label"].setText(f"Bouquet name: {self.bouquet_name.value}\nSelected file: {self.selected_file}")
 
     def open_virtual_keyboard(self):
         if self.bouquet_name.value is None:
@@ -182,20 +192,17 @@ class MainScreen(Screen, ConfigListScreen):
 
     def on_group_selection(self, selected):
         if selected:
-            # Ako je selektovana opcija "Select All", selektujemo sve grupe
             if selected[0] == "Select All":
                 self.selected_groups = list(parse_m3u_by_groups(self.selected_file)[0].keys())
             else:
-                # Dodavanje ili uklanjanje grupe sa liste selektovanih
                 if selected[1] in self.selected_groups:
                     self.selected_groups.remove(selected[1])
                 else:
                     self.selected_groups.append(selected[1])
 
-            # Ažuriranje statusa sa svim selektovanim grupama
-            self["status_label"].setText(f"Selected groups: {', '.join(self.selected_groups)}")
+            self.update_status_label()
         else:
-            self["status_label"].setText("No group selected!")
+            self["status_label"].setText("No groups selected!")
 
     def convert(self):
         if not self.selected_groups:
