@@ -10,6 +10,7 @@ from Screens.ChoiceBox import ChoiceBox
 from Components.Pixmap import Pixmap
 from enigma import eDVBDB
 from Screens.VirtualKeyBoard import VirtualKeyBoard
+from Components.MenuList import MenuList
 import os
 import re
 
@@ -92,8 +93,95 @@ def register_bouquet(bouquet_name):
         print(f"ERROR registering bouquet: {e}")
         return False
 
+def show_groups(self):
+    if not self.selected_file:
+        self["message_label"].setText("No file selected!")
+        return
+    groups, has_groups = parse_m3u_by_groups(self.selected_file)
+    if not groups:
+        self["message_label"].setText("No groups found in file!")
+        return
+    if not has_groups:
+        self.selected_groups = ["All Channels"]
+        self.update_status_label()
+    else:
+        self.session.openWithCallback(self.on_group_selection, GroupSelectionScreen, groups)
+        
+class GroupSelectionScreen(Screen):
+    skin = """
+    <screen name="GroupSelectionScreen" position="center,center" size="800,800" title="Select Groups">
+        <widget name="group_list" position="20,20" size="760,700" font="Regular;24" scrollbarMode="showAlways" />
+        <widget name="button_red" position="20,740" size="180,40" font="Bold;22" halign="center" backgroundColor="#9F1313" foregroundColor="#000000" />
+        <widget name="button_green" position="220,740" size="180,40" font="Bold;22" halign="center" backgroundColor="#1F771F" foregroundColor="#000000" />
+        <widget name="button_blue" position="420,740" size="180,40" font="Bold;22" halign="center" backgroundColor="#13389F" foregroundColor="#000000" />
+    </screen>
+    """
+
+    def __init__(self, session, groups):
+        Screen.__init__(self, session)
+        self.groups = list(groups.keys())
+        self.selected_groups = []
+
+        # Inicijalno postavljanje liste sa oznakama
+        self["group_list"] = MenuList(self.build_group_list(), enableWrapAround=True)
+        self["button_red"] = Button("Cancel")
+        self["button_green"] = Button("Confirm")
+        self["button_blue"] = Button("Select All")
+
+        self["actions"] = ActionMap(
+            ["OkCancelActions", "DirectionActions", "ColorActions"],
+            {
+                "ok": self.toggle_selection,
+                "cancel": self.cancel,
+                "up": self["group_list"].up,
+                "down": self["group_list"].down,
+                "green": self.confirm,
+                "red": self.cancel,
+                "blue": self.select_all,
+            },
+            -1
+        )
+
+    def build_group_list(self):
+        """Kreiranje liste sa oznakama za selektovane grupe."""
+        group_list = []
+        for group in self.groups:
+            if group in self.selected_groups:
+                group_list.append(f"✓ {group}")
+            else:
+                group_list.append(f"  {group}")
+        return group_list
+
+    def toggle_selection(self):
+        # Uzimamo indeks trenutno izabrane stavke i mapiramo ga na originalno ime grupe
+        current_index = self["group_list"].getSelectionIndex()
+        if current_index >= 0 and current_index < len(self.groups):
+            group_name = self.groups[current_index]  # Koristimo čisto ime iz self.groups
+            if group_name in self.selected_groups:
+                self.selected_groups.remove(group_name)
+            else:
+                self.selected_groups.append(group_name)
+            # Ažuriramo prikaz liste
+            self["group_list"].setList(self.build_group_list())
+            print(f"Selected groups: {self.selected_groups}")
+
+    def select_all(self):
+        if set(self.groups) == set(self.selected_groups):
+            self.selected_groups = []  # Deselektuj sve ako su sve izabrane
+        else:
+            self.selected_groups = self.groups[:]  # Izaberi sve
+        # Ažuriramo prikaz liste
+        self["group_list"].setList(self.build_group_list())
+        print(f"Selected groups after Select All: {self.selected_groups}")
+
+    def confirm(self):
+        self.close(self.selected_groups)
+
+    def cancel(self):
+        self.close([])
+
 class MainScreen(Screen, ConfigListScreen):
-    version = "1.5"  # Verzija plugina
+    version = "1.6"  # Updated version
     skin = f"""
     <screen name="CiefpE2Converter" position="center,center" size="1600,800" title="CiefpE2Converter v{version}">
         <widget name="background" position="1200,0" size="400,800" pixmap="/usr/lib/enigma2/python/Plugins/Extensions/CiefpE2Converter/background.png" zPosition="-1" alphatest="on" />
@@ -123,15 +211,20 @@ class MainScreen(Screen, ConfigListScreen):
         self["button_green"] = Button("Convert")
 
         self["actions"] = ActionMap(
-            ["SetupActions", "ColorActions", "TextEditActions"],
+            ["SetupActions", "DirectionActions", "ColorActions", "TextEditActions"],
             {
                 "ok": self.choose_file,
+                "cancel": self.exit,
+                "up": self["file_list"].up,
+                "down": self["file_list"].down,
+                "left": self["file_list"].pageUp,
+                "right": self["file_list"].pageDown,
                 "yellow": self.open_virtual_keyboard,
                 "blue": self.show_groups,
                 "green": self.convert,
-                "cancel": self.exit,
+                "red": self.exit,
             },
-            -1,
+            -1
         )
 
         self.selected_file = None
@@ -140,10 +233,8 @@ class MainScreen(Screen, ConfigListScreen):
 
     def update_status_label(self):
         if self.selected_groups:
-            groups_display = "Selected groups:\n"
-            for idx, group in enumerate(self.selected_groups, 1):
-                groups_display += f"{idx}. {group}\n"
-            self["status_label"].setText(groups_display.strip())
+            groups_display = "Selected groups:\n" + "\n".join(f"{idx}. {group}" for idx, group in enumerate(self.selected_groups, 1))
+            self["status_label"].setText(groups_display)
         else:
             self["status_label"].setText("No groups selected.")
 
@@ -152,12 +243,10 @@ class MainScreen(Screen, ConfigListScreen):
         if selected is None:
             self["message_label"].setText("No file selected!")
             return
-
         if self["file_list"].canDescent():
             self["file_list"].descent()
         else:
             self.selected_file = os.path.join(self["file_list"].getCurrentDirectory(), selected[0])
-            # Prikaz selektovanog fajla i naziva buketa u dva reda
             self["message_label"].setText(f"Bouquet name: {self.bouquet_name.value}\nSelected file: {self.selected_file}")
 
     def open_virtual_keyboard(self):
@@ -168,47 +257,33 @@ class MainScreen(Screen, ConfigListScreen):
     def on_keyboard_input(self, text):
         if text is not None:
             self.bouquet_name.value = text
-            self["message_label"].setText(f"Bouquet name updated: {text}")
+            self["message_label"].setText(f"Bouquet name: {text}\nSelected file: {self.selected_file or 'None'}")
 
     def show_groups(self):
         if not self.selected_file:
             self["message_label"].setText("No file selected!")
             return
-
         groups, has_groups = parse_m3u_by_groups(self.selected_file)
         if not groups:
             self["message_label"].setText("No groups found in file!")
             return
-
-        # Ako nema grupisanja, omogućiti konverziju celog fajla
         if not has_groups:
             self.selected_groups = ["All Channels"]
-            self["status_label"].setText("No groups found, converting entire file.")
-        else:
-            # Prikaz svih grupa sa mogućnošću selekcije više
-            choices = [(group, group) for group in groups.keys()]
-            choices.insert(0, ("Select All", "Select All"))
-            self.session.openWithCallback(self.on_group_selection, ChoiceBox, title="Select Groups", list=choices)
-
-    def on_group_selection(self, selected):
-        if selected:
-            if selected[0] == "Select All":
-                self.selected_groups = list(parse_m3u_by_groups(self.selected_file)[0].keys())
-            else:
-                if selected[1] in self.selected_groups:
-                    self.selected_groups.remove(selected[1])
-                else:
-                    self.selected_groups.append(selected[1])
-
             self.update_status_label()
         else:
-            self["status_label"].setText("No groups selected!")
+            self.session.openWithCallback(self.on_group_selection, GroupSelectionScreen, groups)
+
+    def on_group_selection(self, selected_groups):
+        if selected_groups:
+            self.selected_groups = selected_groups
+            self.update_status_label()
+        else:
+            self["status_label"].setText("Group selection canceled.")
 
     def convert(self):
         if not self.selected_groups:
             self["message_label"].setText("No groups selected!")
             return
-
         choices = [
             ("Gstreamer (4097:0:1)", "4097:0:1"),
             ("Exteplayer3 (5002:0:1)", "5002:0:1"),
@@ -217,25 +292,16 @@ class MainScreen(Screen, ConfigListScreen):
             ("Streamlink (http%3a//127.0.0.1%3a8088/)", "streamlink"),
             ("Streamlink Wrapper (streamlink%3a//)", "streamlink_wrapper"),
         ]
-        self.session.openWithCallback(self.on_service_type_selection, ChoiceBox, title="Select Service Type",
-                                      list=choices)
+        self.session.openWithCallback(self.on_service_type_selection, ChoiceBox, title="Select Service Type", list=choices)
 
     def on_service_type_selection(self, selected):
         if selected:
             self.selected_service_type = selected[1]
             output_dir = "/etc/enigma2"
             groups, has_groups = parse_m3u_by_groups(self.selected_file)
-
-            # Pass the selected groups and service type to the conversion function
-            convert_selected_groups(self.selected_file, output_dir, self.selected_service_type, self.selected_groups,
-                                    self.bouquet_name.value, has_groups)
-
-            # Register bouquet after conversion
-            for group in self.selected_groups:
-                register_bouquet(self.bouquet_name.value)
-
-            self.session.openWithCallback(self.on_reload_response, MessageBox, "Conversion completed! Reload settings?",
-                                          MessageBox.TYPE_YESNO)
+            convert_selected_groups(self.selected_file, output_dir, self.selected_service_type, self.selected_groups, self.bouquet_name.value, has_groups)
+            register_bouquet(self.bouquet_name.value)
+            self.session.openWithCallback(self.on_reload_response, MessageBox, "Conversion completed! Reload settings?", MessageBox.TYPE_YESNO)
 
     def on_reload_response(self, answer):
         if answer:
@@ -252,4 +318,9 @@ class MainScreen(Screen, ConfigListScreen):
             self.session.open(MessageBox, f"Reload failed: {str(e)}", MessageBox.TYPE_ERROR, timeout=5)
 
     def exit(self):
-        self.close()
+        try:
+            print("Exiting MainScreen")
+            self.close()
+        except Exception as e:
+            print(f"Error during exit: {str(e)}")
+            self.close()  # Force close even on error
