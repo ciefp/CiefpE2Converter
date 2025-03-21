@@ -1,7 +1,7 @@
 from Plugins.Plugin import PluginDescriptor
 from .ui import MainScreen
 
-PLUGIN_VERSION = "1.6"  # Sinhronizovano sa najnovijim MainScreen
+PLUGIN_VERSION = "1.7"
 PLUGIN_NAME = "..:: CiefpE2Converter ::.."
 
 def main(session, **kwargs):
