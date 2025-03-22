@@ -162,8 +162,8 @@ def show_groups(self):
 
 class PlaylistSelectionScreen(Screen):
     skin = """
-    <screen name="PlaylistSelectionScreen" position="center,center" size="1200,800" title="Select Playlist Link">
-        <widget name="link_list" position="20,20" size="1160,700" font="Regular;24" scrollbarMode="showAlways" />
+    <screen name="PlaylistSelectionScreen" position="center,center" size="1200,800" title="..:: Select Playlist Link ::..">
+        <widget name="link_list" position="20,20" size="1160,700" scrollbarMode="showAlways" itemHeight="33" font="Regular;28" />
         <widget name="button_red" position="20,740" size="180,40" font="Bold;22" halign="center" backgroundColor="#9F1313" foregroundColor="#000000" />
         <widget name="button_green" position="220,740" size="180,40" font="Bold;22" halign="center" backgroundColor="#1F771F" foregroundColor="#000000" />
     </screen>
@@ -229,8 +229,9 @@ class PlaylistSelectionScreen(Screen):
 
 class ChannelSelectionScreen(Screen):
     skin = """
-    <screen name="ChannelSelectionScreen" position="center,center" size="850,800" title="Select Channels">
-        <widget name="channel_list" position="20,20" size="810,700" font="Regular;24" scrollbarMode="showAlways" />
+    <screen name="ChannelSelectionScreen" position="center,center" size="1200,800" title="..:: Select Channels ::..">
+        <widget name="channel_list" position="20,20" size="810,700" scrollbarMode="showAlways" itemHeight="33" font="Regular;28" />
+        <widget name="background" position="820,0" size="350,800" pixmap="/usr/lib/enigma2/python/Plugins/Extensions/CiefpE2Converter/background3.png" zPosition="-1" alphatest="on" />
         <widget name="button_red" position="20,740" size="180,40" font="Bold;22" halign="center" backgroundColor="#9F1313" foregroundColor="#000000" />
         <widget name="button_green" position="220,740" size="180,40" font="Bold;22" halign="center" backgroundColor="#1F771F" foregroundColor="#000000" />
         <widget name="button_blue" position="420,740" size="180,40" font="Bold;22" halign="center" backgroundColor="#13389F" foregroundColor="#000000" />
@@ -248,6 +249,7 @@ class ChannelSelectionScreen(Screen):
         self.channels = self.process_channels(channels)
 
         self["channel_list"] = MenuList(self.build_channel_list(), enableWrapAround=True)
+        self["background"] = Pixmap()
         self["button_red"] = Button("Cancel")
         self["button_green"] = Button("Confirm")
         self["button_blue"] = Button("Select All")
@@ -358,8 +360,9 @@ class ChannelSelectionScreen(Screen):
 
 class GroupSelectionScreen(Screen):
     skin = """
-    <screen name="GroupSelectionScreen" position="center,center" size="850,800" title="Select Groups">
-        <widget name="group_list" position="20,20" size="810,700" font="Regular;24" scrollbarMode="showAlways" />
+    <screen name="GroupSelectionScreen" position="center,center" size="1200,800" title="..:: Select Groups ::..">
+        <widget name="group_list" position="20,20" size="810,700" scrollbarMode="showAlways" itemHeight="33" font="Regular;28" />
+        <widget name="background" position="820,0" size="350,800" pixmap="/usr/lib/enigma2/python/Plugins/Extensions/CiefpE2Converter/background2.png" zPosition="-1" alphatest="on" />
         <widget name="button_red" position="20,740" size="180,40" font="Bold;22" halign="center" backgroundColor="#9F1313" foregroundColor="#000000" />
         <widget name="button_green" position="220,740" size="180,40" font="Bold;22" halign="center" backgroundColor="#1F771F" foregroundColor="#000000" />
         <widget name="button_blue" position="420,740" size="180,40" font="Bold;22" halign="center" backgroundColor="#13389F" foregroundColor="#000000" />
@@ -380,6 +383,7 @@ class GroupSelectionScreen(Screen):
             self.groups = ["No groups found"]
 
         self["group_list"] = MenuList(self.build_group_list(), enableWrapAround=True)
+        self["background"] = Pixmap()
         self["button_red"] = Button("Cancel")
         self["button_green"] = Button("Confirm")
         self["button_blue"] = Button("Select All")
@@ -449,9 +453,9 @@ class GroupSelectionScreen(Screen):
         Screen.close(self, [])
 
 class MainScreen(Screen, ConfigListScreen):
-    version = "1.7"
+    version = "1.8"
     skin = f"""
-    <screen name="CiefpE2Converter" position="center,center" size="1600,800" title="CiefpE2Converter v{version}">
+    <screen name="CiefpE2Converter" position="center,center" size="1600,800" title="..:: CiefpE2Converter v{version} ::..">
         <widget name="background" position="1200,0" size="400,800" pixmap="/usr/lib/enigma2/python/Plugins/Extensions/CiefpE2Converter/background.png" zPosition="-1" alphatest="on" />
         <widget name="message_label" position="50,30" size="1100,100" font="Regular;24" valign="top" />
         <widget name="file_list" position="50,150" size="600,580" scrollbarMode="showOnDemand" />
