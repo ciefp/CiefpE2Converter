@@ -234,9 +234,9 @@ class ChannelSelectionScreen(Screen):
         <widget name="background" position="820,0" size="350,800" pixmap="/usr/lib/enigma2/python/Plugins/Extensions/CiefpE2Converter/background3.png" zPosition="-1" alphatest="on" />
         <widget name="button_red" position="20,740" size="180,40" font="Bold;22" halign="center" backgroundColor="#9F1313" foregroundColor="#000000" />
         <widget name="button_green" position="220,740" size="180,40" font="Bold;22" halign="center" backgroundColor="#1F771F" foregroundColor="#000000" />
-        <widget name="button_blue" position="420,740" size="180,40" font="Bold;22" halign="center" backgroundColor="#13389F" foregroundColor="#000000" />
-        <widget name="button_yellow" position="620,740" size="180,40" font="Bold;22" halign="center" backgroundColor="#9F9F13" foregroundColor="#000000" />
-    </screen>
+        <widget name="button_yellow" position="420,740" size="180,40" font="Bold;22" halign="center" backgroundColor="#9F9F13" foregroundColor="#000000" />
+        <widget name="button_blue" position="620,740" size="180,40" font="Bold;22" halign="center" backgroundColor="#13389F" foregroundColor="#000000" />
+    </screen> 
     """
 
     def __init__(self, session, channels):
@@ -365,8 +365,8 @@ class GroupSelectionScreen(Screen):
         <widget name="background" position="820,0" size="350,800" pixmap="/usr/lib/enigma2/python/Plugins/Extensions/CiefpE2Converter/background2.png" zPosition="-1" alphatest="on" />
         <widget name="button_red" position="20,740" size="180,40" font="Bold;22" halign="center" backgroundColor="#9F1313" foregroundColor="#000000" />
         <widget name="button_green" position="220,740" size="180,40" font="Bold;22" halign="center" backgroundColor="#1F771F" foregroundColor="#000000" />
-        <widget name="button_blue" position="420,740" size="180,40" font="Bold;22" halign="center" backgroundColor="#13389F" foregroundColor="#000000" />
-        <widget name="button_yellow" position="620,740" size="180,40" font="Bold;22" halign="center" backgroundColor="#9F9F13" foregroundColor="#000000" />
+        <widget name="button_yellow" position="420,740" size="180,40" font="Bold;22" halign="center" backgroundColor="#9F9F13" foregroundColor="#000000" />
+        <widget name="button_blue" position="620,740" size="180,40" font="Bold;22" halign="center" backgroundColor="#13389F" foregroundColor="#000000" />
     </screen>
     """
 
@@ -461,9 +461,9 @@ class MainScreen(Screen, ConfigListScreen):
         <widget name="file_list" position="50,150" size="600,580" scrollbarMode="showOnDemand" />
         <widget name="status_label" position="700,150" size="500,580" font="Regular;22" halign="left" valign="top" />
         <widget name="button_red" position="50,750" size="200,40" font="Bold;22" halign="center" backgroundColor="#9F1313" foregroundColor="#000000" />
-        <widget name="button_yellow" position="250,750" size="200,40" font="Bold;22" halign="center" backgroundColor="#9F9F13" foregroundColor="#000000" />
-        <widget name="button_blue" position="450,750" size="200,40" font="Bold;22" halign="center" backgroundColor="#13389F" foregroundColor="#000000" />
-        <widget name="button_green" position="650,750" size="200,40" font="Bold;22" halign="center" backgroundColor="#1F771F" foregroundColor="#000000" />
+        <widget name="button_green" position="250,750" size="200,40" font="Bold;22" halign="center" backgroundColor="#1F771F" foregroundColor="#000000" />
+        <widget name="button_yellow" position="450,750" size="200,40" font="Bold;22" halign="center" backgroundColor="#9F9F13" foregroundColor="#000000" />
+        <widget name="button_blue" position="650,750" size="200,40" font="Bold;22" halign="center" backgroundColor="#13389F" foregroundColor="#000000" />
     </screen>
     """
 
