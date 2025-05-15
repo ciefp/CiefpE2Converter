@@ -453,7 +453,7 @@ class GroupSelectionScreen(Screen):
         Screen.close(self, [])
 
 class MainScreen(Screen, ConfigListScreen):
-    version = "1.8"
+    version = "2.0"
     skin = f"""
     <screen name="CiefpE2Converter" position="center,center" size="1600,800" title="..:: CiefpE2Converter v{version} ::..">
         <widget name="background" position="1200,0" size="400,800" pixmap="/usr/lib/enigma2/python/Plugins/Extensions/CiefpE2Converter/background.png" zPosition="-1" alphatest="on" />
