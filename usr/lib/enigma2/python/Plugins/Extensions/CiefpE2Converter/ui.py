@@ -452,8 +452,8 @@ class GroupSelectionScreen(Screen):
     def cancel(self):
         Screen.close(self, [])
 
-class MainScreen(Screen, ConfigListScreen):
-    version = "2.0"
+class CiefpMainScreen(Screen, ConfigListScreen):
+    version = "2.1"
     skin = f"""
     <screen name="CiefpE2Converter" position="center,center" size="1600,800" title="..:: CiefpE2Converter v{version} ::..">
         <widget name="background" position="1200,0" size="400,800" pixmap="/usr/lib/enigma2/python/Plugins/Extensions/CiefpE2Converter/background.png" zPosition="-1" alphatest="on" />
@@ -622,8 +622,8 @@ class MainScreen(Screen, ConfigListScreen):
 
     def exit(self):
         try:
-            print("Exiting MainScreen")
+            print("Exiting CiefpMainScreen")
             Screen.close(self)  # Umesto poziva na _close_method
         except Exception as e:
             print(f"Error during exit: {str(e)}")
-            Screen.close(self)  # Osiguraj da se ekran zatvori
+            Screen.close(self)
