@@ -98,7 +98,7 @@ sync
 echo ""
 echo ""
 echo "#########################################################"
-echo "#          CiefpE2Converter INSTALLED SUCCESSFULLY          #"
+echo "#         CiefpE2Converter INSTALLED SUCCESSFULLY       #"
 echo "#                  developed by ciefp                   #"
 echo "#                  .::CiefpSettings::.                  #"
 echo "#               https://github.com/ciefp                #"
