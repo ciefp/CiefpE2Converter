@@ -28,7 +28,7 @@ def parse_m3u_by_groups(input_file):
                 match = re.search(r'group-title="([^"]+)"', line)
                 if match:
                     current_group = match.group(1)
-                    if not current_group:  # Provera praznog stringa
+                    if not current_group:
                         current_group = None
                         continue
                     if current_group not in groups:
@@ -50,7 +50,6 @@ def download_m3u(url, base_dir="/tmp/m3u_playlist"):
     """Preuzimanje M3U fajla sa datog URL-a u direktorijum /tmp/m3u_playlist"""
     print(f"Attempting to download M3U from URL: {url}")
     try:
-        # Proveravamo da li direktorijum postoji, ako ne, kreiramo ga
         if not os.path.exists(base_dir):
             print(f"Creating directory: {base_dir}")
             os.makedirs(base_dir)
@@ -58,15 +57,12 @@ def download_m3u(url, base_dir="/tmp/m3u_playlist"):
             print(f"Error: {base_dir} exists but is not a directory!")
             return None
 
-        # Generišemo ime fajla na osnovu URL-a
-        # Uzimamo username iz URL-a ili padamo na generičko ime ako nije prisutan
         username_match = re.search(r'username=([^&]+)', url)
         if username_match:
             filename_base = username_match.group(1)
         else:
             filename_base = "playlist"
 
-        # Dodajemo .m3u ekstenziju i proveravamo da li fajl već postoji
         output_path = os.path.join(base_dir, f"{filename_base}.m3u")
         counter = 1
         while os.path.exists(output_path):
@@ -92,7 +88,6 @@ def convert_selected_groups(input_file, output_dir, service_type, selected_items
         file.write(f"#NAME {bouquet_name}\n")
 
         if has_groups:
-            # Ako su selektovane grupe
             for group_name in selected_items:
                 if group_name in result:
                     for metadata, url in result[group_name]:
@@ -107,7 +102,6 @@ def convert_selected_groups(input_file, output_dir, service_type, selected_items
                             file.write(f"#SERVICE {service_type}:0:0:0:0:0:0:0:{url_encoded}\n")
                         file.write(f"#DESCRIPTION {channel_name}\n")
         else:
-            # Ako su selektovani kanali
             for channel_name in selected_items:
                 for name, url in result:
                     if name == channel_name:
@@ -122,7 +116,6 @@ def convert_selected_groups(input_file, output_dir, service_type, selected_items
                         file.write(f"#DESCRIPTION {channel_name}\n")
                         break
 
-# Register the bouquet in bouquets.tv
 def register_bouquet(bouquet_name):
     try:
         bouquet_file_path = "/etc/enigma2/bouquets.tv"
@@ -162,10 +155,14 @@ def show_groups(self):
 
 class PlaylistSelectionScreen(Screen):
     skin = """
-    <screen name="PlaylistSelectionScreen" position="center,center" size="1200,800" title="..:: Select Playlist Link ::..">
-        <widget name="link_list" position="20,20" size="1160,700" scrollbarMode="showAlways" itemHeight="33" font="Regular;28" />
-        <widget name="button_red" position="20,740" size="180,40" font="Bold;22" halign="center" backgroundColor="#9F1313" foregroundColor="#000000" />
-        <widget name="button_green" position="220,740" size="180,40" font="Bold;22" halign="center" backgroundColor="#1F771F" foregroundColor="#000000" />
+    <screen name="PlaylistSelectionScreen" position="center,center" size="1920,1080" backgroundColor="#011a2e">
+        <!-- NASLOV -->
+        <widget name="channel_title" position="0,20" size="1920,60" font="Bold;42" 
+            halign="center" valign="center" backgroundColor="#012e01" foregroundColor="#FFFFFF" 
+            transparent="0" zPosition="2" />
+        <widget name="link_list" position="60,100" size="1800,850" scrollbarMode="showAlways" itemHeight="40" font="Regular;30" backgroundColor="#011a2e"/>
+        <widget name="button_red" position="60,970" size="250,50" font="Bold;24" halign="center" backgroundColor="#9F1313" foregroundColor="#000000" />
+        <widget name="button_green" position="340,970" size="250,50" font="Bold;24" halign="center" backgroundColor="#1F771F" foregroundColor="#000000" />
     </screen>
     """
 
@@ -174,11 +171,11 @@ class PlaylistSelectionScreen(Screen):
         self.txt_file = txt_file
         self.links = self.load_links()
 
+        self["channel_title"] = Label("..:: Select Playlist Link ::..")
         self["link_list"] = MenuList(self.links, enableWrapAround=True)
         self["button_red"] = Button("Cancel")
         self["button_green"] = Button("Confirm")
 
-        # Ispravljena definicija ActionMap
         self["actions"] = ActionMap(
             ["OkCancelActions", "DirectionActions", "ColorActions"],
             {
@@ -193,7 +190,6 @@ class PlaylistSelectionScreen(Screen):
         )
 
     def load_links(self):
-        """Učitavanje linkova iz playlist.txt"""
         links = []
         print(f"Loading links from file: {self.txt_file}")
         try:
@@ -217,7 +213,7 @@ class PlaylistSelectionScreen(Screen):
         if selected_index >= 0 and self.links[selected_index].startswith("http"):
             selected_link = self.links[selected_index]
             print(f"Confirmed link: {selected_link}")
-            self.close(selected_link)  # Vraćamo selektovani link
+            self.close(selected_link)
         else:
             print("Invalid or no link selected!")
             self.close(None)
@@ -229,23 +225,27 @@ class PlaylistSelectionScreen(Screen):
 
 class ChannelSelectionScreen(Screen):
     skin = """
-    <screen name="ChannelSelectionScreen" position="center,center" size="1200,800" title="..:: Select Channels ::..">
-        <widget name="channel_list" position="20,20" size="810,700" scrollbarMode="showAlways" itemHeight="33" font="Regular;28" />
-        <widget name="background" position="820,0" size="350,800" pixmap="/usr/lib/enigma2/python/Plugins/Extensions/CiefpE2Converter/background3.png" zPosition="-1" alphatest="on" />
-        <widget name="button_red" position="20,740" size="180,40" font="Bold;22" halign="center" backgroundColor="#9F1313" foregroundColor="#000000" />
-        <widget name="button_green" position="220,740" size="180,40" font="Bold;22" halign="center" backgroundColor="#1F771F" foregroundColor="#000000" />
-        <widget name="button_yellow" position="420,740" size="180,40" font="Bold;22" halign="center" backgroundColor="#9F9F13" foregroundColor="#000000" />
-        <widget name="button_blue" position="620,740" size="180,40" font="Bold;22" halign="center" backgroundColor="#13389F" foregroundColor="#000000" />
+    <screen name="ChannelSelectionScreen" position="center,center" size="1920,1080" backgroundColor="#011a2e">
+        <!-- NASLOV -->
+        <widget name="channel_title" position="0,20" size="1920,60" font="Bold;42" 
+            halign="center" valign="center" backgroundColor="#012e01" foregroundColor="#FFFFFF" 
+            transparent="0" zPosition="2" />
+        <widget name="channel_list" position="60,100" size="1200,850" scrollbarMode="showAlways" itemHeight="40" font="Regular;30" backgroundColor="#011a2e"/>
+        <widget name="background" position="1400,100" size="500,900" pixmap="/usr/lib/enigma2/python/Plugins/Extensions/CiefpE2Converter/background3.png" zPosition="-1" alphatest="on" />
+        <widget name="button_red" position="60,970" size="250,50" font="Bold;24" halign="center" backgroundColor="#9F1313" foregroundColor="#000000" />
+        <widget name="button_green" position="330,970" size="250,50" font="Bold;24" halign="center" backgroundColor="#1F771F" foregroundColor="#000000" />
+        <widget name="button_yellow" position="600,970" size="250,50" font="Bold;24" halign="center" backgroundColor="#9F9F13" foregroundColor="#000000" />
+        <widget name="button_blue" position="870,970" size="250,50" font="Bold;24" halign="center" backgroundColor="#13389F" foregroundColor="#000000" />
     </screen> 
     """
 
     def __init__(self, session, channels):
         Screen.__init__(self, session)
         self.session = session
-        self.all_channels = channels  # Čuvamo originalnu listu svih kanala iz M3U fajla
+        self.all_channels = channels
         self.selected_channels = []
 
-        # Grupisanje serija i kreiranje prikazane liste bez sortiranja
+        self["channel_title"] = Label("..:: Select Channels ::..")
         self.channels = self.process_channels(channels)
 
         self["channel_list"] = MenuList(self.build_channel_list(), enableWrapAround=True)
@@ -271,28 +271,24 @@ class ChannelSelectionScreen(Screen):
         )
 
     def process_channels(self, channels):
-        """Grupisanje serija i kreiranje liste za prikaz, očuvanje originalnog redosleda"""
         series_dict = {}
         display_list = []
-        seen_series = set()  # Pratimo već viđene serije da ih ne dupliramo
+        seen_series = set()
 
         for channel_name, _ in channels:
-            # Provera da li je kanal serija (npr. "The X Files S01 E01")
             series_match = re.match(r"^(.*?)\s+S\d+\s*E\d+$", channel_name, re.IGNORECASE)
             if series_match:
-                series_name = series_match.group(1).strip()  # npr. "The X Files"
+                series_name = series_match.group(1).strip()
                 if series_name not in series_dict:
                     series_dict[series_name] = []
                 series_dict[series_name].append(channel_name)
-                # Dodajemo naziv serije samo prvi put kada je vidimo
                 if series_name not in seen_series:
                     display_list.append(series_name)
                     seen_series.add(series_name)
             else:
-                # Ako nije serija, dodajemo direktno u listu
                 display_list.append(channel_name)
 
-        return display_list  # Vraćamo listu bez sortiranja
+        return display_list
 
     def build_channel_list(self):
         return [f"✓ {channel}" if channel in self.selected_channels else f"  {channel}" for channel in self.channels]
@@ -320,14 +316,12 @@ class ChannelSelectionScreen(Screen):
             return
         current_channel = self.channels[current_index]
 
-        # Identifikujemo bazni prefiks
         base_pattern = re.match(r"^(.*?)([:\-]\s*|\s+)(.*)$", current_channel)
         if base_pattern:
             base_name = base_pattern.group(1) + base_pattern.group(2)
         else:
             base_name = re.sub(r"\s*(HD|SD|\d+)$", "", current_channel, flags=re.IGNORECASE).strip()
 
-        # Selekcija svih kanala koji počinju sa baznim prefiksom
         for channel in self.channels:
             if channel.startswith(base_name) and channel not in self.selected_channels:
                 self.selected_channels.append(channel)
@@ -335,7 +329,6 @@ class ChannelSelectionScreen(Screen):
         print(f"Selected similar channels with prefix: {base_name}")
 
     def get_full_series_channels(self, series_name):
-        """Vraća sve epizode za datu seriju iz originalne liste"""
         series_channels = []
         for channel_name, _ in self.all_channels:
             if re.match(rf"^{re.escape(series_name)}\s+S\d+\s*E\d+$", channel_name, re.IGNORECASE):
@@ -343,15 +336,12 @@ class ChannelSelectionScreen(Screen):
         return series_channels
 
     def confirm(self):
-        # Proširujemo selekciju da uključimo sve epizode serija
         final_selection = []
         for selected in self.selected_channels:
             if any(re.match(rf"^{re.escape(selected)}\s+S\d+\s*E\d+$", ch[0], re.IGNORECASE) for ch in
                    self.all_channels):
-                # Ako je serija, dodajemo sve epizode
                 final_selection.extend(self.get_full_series_channels(selected))
             else:
-                # Ako nije serija, dodajemo samo selektovani kanal
                 final_selection.append(selected)
         Screen.close(self, final_selection)
 
@@ -360,13 +350,17 @@ class ChannelSelectionScreen(Screen):
 
 class GroupSelectionScreen(Screen):
     skin = """
-    <screen name="GroupSelectionScreen" position="center,center" size="1200,800" title="..:: Select Groups ::..">
-        <widget name="group_list" position="20,20" size="810,700" scrollbarMode="showAlways" itemHeight="33" font="Regular;28" />
-        <widget name="background" position="820,0" size="350,800" pixmap="/usr/lib/enigma2/python/Plugins/Extensions/CiefpE2Converter/background2.png" zPosition="-1" alphatest="on" />
-        <widget name="button_red" position="20,740" size="180,40" font="Bold;22" halign="center" backgroundColor="#9F1313" foregroundColor="#000000" />
-        <widget name="button_green" position="220,740" size="180,40" font="Bold;22" halign="center" backgroundColor="#1F771F" foregroundColor="#000000" />
-        <widget name="button_yellow" position="420,740" size="180,40" font="Bold;22" halign="center" backgroundColor="#9F9F13" foregroundColor="#000000" />
-        <widget name="button_blue" position="620,740" size="180,40" font="Bold;22" halign="center" backgroundColor="#13389F" foregroundColor="#000000" />
+    <screen name="GroupSelectionScreen" position="center,center" size="1920,1080" backgroundColor="#011a2e">
+        <!-- NASLOV -->
+        <widget name="channel_title" position="0,20" size="1920,60" font="Bold;42" 
+            halign="center" valign="center" backgroundColor="#012e01" foregroundColor="#FFFFFF" 
+            transparent="0" zPosition="2" />
+        <widget name="group_list" position="60,100" size="1200,850" scrollbarMode="showAlways" itemHeight="40" font="Regular;30" backgroundColor="#011a2e"/>
+        <widget name="background" position="1400,100" size="500,900" pixmap="/usr/lib/enigma2/python/Plugins/Extensions/CiefpE2Converter/background2.png" zPosition="-1" alphatest="on" />
+        <widget name="button_red" position="60,970" size="250,50" font="Bold;24" halign="center" backgroundColor="#9F1313" foregroundColor="#000000" />
+        <widget name="button_green" position="330,970" size="250,50" font="Bold;24" halign="center" backgroundColor="#1F771F" foregroundColor="#000000" />
+        <widget name="button_yellow" position="600,970" size="250,50" font="Bold;24" halign="center" backgroundColor="#9F9F13" foregroundColor="#000000" />
+        <widget name="button_blue" position="870,970" size="250,50" font="Bold;24" halign="center" backgroundColor="#13389F" foregroundColor="#000000" />
     </screen>
     """
 
@@ -374,10 +368,10 @@ class GroupSelectionScreen(Screen):
         Screen.__init__(self, session)
         self.session = session
         print(f"GroupSelectionScreen: Received groups = {groups}")
-        self.groups = list(groups.keys())  # Samo grupe
+        self.groups = list(groups.keys())
         self.selected_groups = []
 
-        # Dijagnostika
+        self["channel_title"] = Label("..:: Select Groups ::..")
         print(f"GroupSelectionScreen: Number of groups = {len(self.groups)}, groups = {self.groups}")
         if not self.groups:
             self.groups = ["No groups found"]
@@ -431,15 +425,12 @@ class GroupSelectionScreen(Screen):
             return
         current_group = self.groups[current_index]
 
-        # Identifikujemo bazni prefiks
         base_pattern = re.match(r"^(.*?)([:\-]\s*|\s+)(.*)$", current_group)
         if base_pattern:
-            base_name = base_pattern.group(1) + base_pattern.group(2)  # npr. "Sport TV ", "XXX:", "EXYU:"
+            base_name = base_pattern.group(1) + base_pattern.group(2)
         else:
-            # Ako nema separatora, uzimamo ceo naziv do poslednjeg razmaka ili kraja
             base_name = re.sub(r"\s*(HD|SD|\d+)$", "", current_group, flags=re.IGNORECASE).strip()
 
-        # Selekcija svih grupa koje počinju sa baznim prefiksom
         for group in self.groups:
             if group.startswith(base_name) and group not in self.selected_groups:
                 self.selected_groups.append(group)
@@ -453,27 +444,32 @@ class GroupSelectionScreen(Screen):
         Screen.close(self, [])
 
 class CiefpMainScreen(Screen, ConfigListScreen):
-    version = "2.1"
+    version = "2.2"
     skin = f"""
-    <screen name="CiefpE2Converter" position="center,center" size="1600,800" title="..:: CiefpE2Converter v{version} ::..">
-        <widget name="background" position="1200,0" size="400,800" pixmap="/usr/lib/enigma2/python/Plugins/Extensions/CiefpE2Converter/background.png" zPosition="-1" alphatest="on" />
-        <widget name="message_label" position="50,30" size="1100,100" font="Regular;24" valign="top" />
-        <widget name="file_list" position="50,150" size="600,580" scrollbarMode="showOnDemand" />
-        <widget name="status_label" position="700,150" size="500,580" font="Regular;22" halign="left" valign="top" />
-        <widget name="button_red" position="50,750" size="200,40" font="Bold;22" halign="center" backgroundColor="#9F1313" foregroundColor="#000000" />
-        <widget name="button_green" position="250,750" size="200,40" font="Bold;22" halign="center" backgroundColor="#1F771F" foregroundColor="#000000" />
-        <widget name="button_yellow" position="450,750" size="200,40" font="Bold;22" halign="center" backgroundColor="#9F9F13" foregroundColor="#000000" />
-        <widget name="button_blue" position="650,750" size="200,40" font="Bold;22" halign="center" backgroundColor="#13389F" foregroundColor="#000000" />
+    <screen name="CiefpE2Converter" position="center,center" size="1920,1080" backgroundColor="#011a2e">
+        <!-- NASLOV -->
+        <widget name="channel_title" position="0,20" size="1920,60" font="Bold;42" 
+            halign="center" valign="center" backgroundColor="#012e01" foregroundColor="#FFFFFF" 
+            transparent="0" zPosition="2" />
+        <widget name="background" position="1400,100" size="500,900" pixmap="/usr/lib/enigma2/python/Plugins/Extensions/CiefpE2Converter/background.png" zPosition="-1" alphatest="on" />
+        <widget name="message_label" position="60,100" size="1300,80" font="Regular;26" valign="top" backgroundColor="#011a2e"/>
+        <widget name="file_list" position="60,210" size="700,700" valign="center" scrollbarMode="showOnDemand" itemHeight="35" font="Regular;26"  backgroundColor="#011a2e"/>
+        <widget name="status_label" position="800,210" size="600,700" font="Regular;24" halign="left" valign="top" backgroundColor="#011a2e"/>
+        <widget name="button_red" position="60,970" size="220,50" font="Bold;24" halign="center" backgroundColor="#9F1313" foregroundColor="#000000" />
+        <widget name="button_green" position="300,970" size="220,50" font="Bold;24" halign="center" backgroundColor="#1F771F" foregroundColor="#000000" />
+        <widget name="button_yellow" position="540,970" size="220,50" font="Bold;24" halign="center" backgroundColor="#9F9F13" foregroundColor="#000000" />
+        <widget name="button_blue" position="780,970" size="220,50" font="Bold;24" halign="center" backgroundColor="#13389F" foregroundColor="#000000" />
     </screen>
     """
 
     def __init__(self, session):
         Screen.__init__(self, session)
-        self.session = session  # Čuvamo sesiju eksplicitno
-        self._close_method = self.close  # Sačuvajmo originalni close metod
+        self.session = session
+        self._close_method = self.close
         self.bouquet_name = ConfigText(default="IPTV Mix Bouquet", fixed_size=False)
         ConfigListScreen.__init__(self, [getConfigListEntry("Bouquet Name:", self.bouquet_name)])
 
+        self["channel_title"] = Label(f"..:: CiefpE2Converter v{self.version} ::..")
         self["background"] = Pixmap()
         self["message_label"] = Label("Select a file and define bouquet name")
         self["status_label"] = Label("")
@@ -623,7 +619,7 @@ class CiefpMainScreen(Screen, ConfigListScreen):
     def exit(self):
         try:
             print("Exiting CiefpMainScreen")
-            Screen.close(self)  # Umesto poziva na _close_method
+            Screen.close(self)
         except Exception as e:
             print(f"Error during exit: {str(e)}")
             Screen.close(self)
